@@ -114,13 +114,17 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] px-1 pt-2 text-[var(--text-muted)]">
-            <Sun className={`size-4 ${!isDark ? 'text-[var(--text-primary)]' : ''}`} />
+            <Sun
+              className={`size-4 transition-all duration-300 ${!isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
+            />
             <Switch
               aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
               checked={isDark}
               onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
             />
-            <Moon className={`size-4 ${isDark ? 'text-[var(--text-primary)]' : ''}`} />
+            <Moon
+              className={`size-4 transition-all duration-300 ${isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
+            />
           </div>
         </aside>
 
