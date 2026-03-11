@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowUp,
   Bot,
@@ -9,18 +9,20 @@ import {
   PanelLeftClose,
   Paperclip,
   Plus,
+  LoaderCircle,
   RefreshCw,
   Sparkles,
   Sun,
 } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Switch } from './components/ui/switch'
+import { createChat, listChats, type ChatSummary } from './api/chats'
 
 type ThemeMode = 'dark' | 'light'
 
-type ChatGroup = {
+type SidebarChatGroup = {
   label: string
-  items: string[]
+  items: ChatSummary[]
 }
 
 type Message = {
@@ -29,23 +31,9 @@ type Message = {
   text: string
 }
 
-const chatGroups: ChatGroup[] = [
-  {
-    label: 'Today',
-    items: [
-      'Landing page redesign',
-      'Portfolio with animations',
-      'Dashboard UI prototype',
-    ],
-  },
-  {
-    label: 'Yesterday',
-    items: ['Blog post template', 'E-commerce product page'],
-  },
-]
-
 const navItems = ['Features', 'Reviews', 'Pricing', 'About']
 const quickActions = ['Help me create a pitch deck', 'Change to neon style']
+const MAX_CHAT_COUNT = 3
 
 const messages: Message[] = [
   {
@@ -72,7 +60,71 @@ const messages: Message[] = [
 
 function App() {
   const [theme, setTheme] = useState<ThemeMode>('dark')
+  const [chats, setChats] = useState<ChatSummary[]>([])
+  const [activeChatId, setActiveChatId] = useState<string | null>(null)
+  const [isLoadingChats, setIsLoadingChats] = useState(true)
+  const [isCreatingChat, setIsCreatingChat] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
   const isDark = theme === 'dark'
+  const chatGroups = groupChatsByDate(chats)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadSidebarChats() {
+      try {
+        setIsLoadingChats(true)
+        setChatError(null)
+        const nextChats = await listChats()
+
+        if (cancelled) {
+          return
+        }
+
+        setChats(nextChats)
+        setActiveChatId((current) => current ?? nextChats[0]?.id ?? null)
+      } catch (error) {
+        if (cancelled) {
+          return
+        }
+
+        setChatError(getErrorMessage(error))
+      } finally {
+        if (!cancelled) {
+          setIsLoadingChats(false)
+        }
+      }
+    }
+
+    void loadSidebarChats()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function handleCreateChat() {
+    if (chats.length >= MAX_CHAT_COUNT) {
+      window.alert('You already have 3 chats. Remove one before creating a new chat.')
+      return
+    }
+
+    try {
+      setIsCreatingChat(true)
+      setChatError(null)
+      const nextChat = await createChat()
+
+      setChats((currentChats) => {
+        const dedupedChats = currentChats.filter((chat) => chat.id !== nextChat.id)
+        return [nextChat, ...dedupedChats]
+      })
+      setActiveChatId(nextChat.id)
+    } catch (error) {
+      setChatError(getErrorMessage(error))
+    } finally {
+      setIsCreatingChat(false)
+    }
+  }
 
   return (
     <div className={`theme-${theme} min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)]`}>
@@ -82,30 +134,59 @@ function App() {
             <span className="text-base font-semibold tracking-[-0.02em]">
               Funky Workspace
             </span>
-            <Button size="icon" variant="ghost" aria-label="Create chat">
-              <Plus className="size-4" />
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label="Create chat"
+              disabled={isCreatingChat}
+              onClick={() => void handleCreateChat()}
+            >
+              {isCreatingChat ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
             </Button>
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col gap-4 pt-1">
+            {isLoadingChats ? (
+              <div className="px-1 pt-1 text-sm text-[var(--text-muted)]">
+                Loading chats...
+              </div>
+            ) : null}
+
+            {chatError ? (
+              <div className="rounded-[8px] border border-[var(--border-subtle)] bg-[var(--surface-hover)] px-3 py-2 text-xs text-[var(--text-muted)]">
+                {chatError}
+              </div>
+            ) : null}
+
+            {!isLoadingChats && !chatError && chatGroups.length === 0 ? (
+              <div className="px-1 pt-1 text-sm text-[var(--text-muted)]">
+                No chats yet.
+              </div>
+            ) : null}
+
             {chatGroups.map((group) => (
               <section className="flex flex-col gap-0.5" key={group.label}>
                 <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-muted)]">
                   {group.label}
                 </p>
-                {group.items.map((item, index) => {
-                  const isActive = group.label === 'Today' && index === 0
+                {group.items.map((chat) => {
+                  const isActive = chat.id === activeChatId
 
                   return (
                     <button
                       className={`flex w-full items-center gap-2.5 rounded-[6px] px-3 py-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors ${
                         isActive ? 'bg-[var(--surface-active)]' : 'hover:bg-[var(--surface-hover)]'
                       }`}
-                      key={item}
+                      key={chat.id}
+                      onClick={() => setActiveChatId(chat.id)}
                       type="button"
                     >
                       <MessageSquare className="size-[14px] text-[var(--text-muted)]" />
-                      <span>{item}</span>
+                      <span className="truncate">{chat.title}</span>
                     </button>
                   )
                 })}
@@ -283,3 +364,75 @@ function App() {
 }
 
 export default App
+
+function groupChatsByDate(chats: ChatSummary[]): SidebarChatGroup[] {
+  const sortedChats = [...chats].sort((left, right) => {
+    const leftTimestamp = Date.parse(left.updatedAt ?? left.createdAt ?? '') || 0
+    const rightTimestamp = Date.parse(right.updatedAt ?? right.createdAt ?? '') || 0
+
+    return rightTimestamp - leftTimestamp
+  })
+
+  const today: ChatSummary[] = []
+  const yesterday: ChatSummary[] = []
+  const earlier: ChatSummary[] = []
+
+  for (const chat of sortedChats) {
+    const targetGroup = getRelativeChatBucket(chat)
+
+    if (targetGroup === 'Today') {
+      today.push(chat)
+      continue
+    }
+
+    if (targetGroup === 'Yesterday') {
+      yesterday.push(chat)
+      continue
+    }
+
+    earlier.push(chat)
+  }
+
+  return [
+    { label: 'Today', items: today },
+    { label: 'Yesterday', items: yesterday },
+    { label: 'Earlier', items: earlier },
+  ].filter((group) => group.items.length > 0)
+}
+
+function getRelativeChatBucket(chat: ChatSummary) {
+  const rawDate = chat.updatedAt ?? chat.createdAt
+
+  if (!rawDate) {
+    return 'Earlier'
+  }
+
+  const parsedDate = new Date(rawDate)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Earlier'
+  }
+
+  const today = new Date()
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const startOfYesterday = new Date(startOfToday)
+  startOfYesterday.setDate(startOfToday.getDate() - 1)
+
+  if (parsedDate >= startOfToday) {
+    return 'Today'
+  }
+
+  if (parsedDate >= startOfYesterday) {
+    return 'Yesterday'
+  }
+
+  return 'Earlier'
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'Something went wrong while loading chats.'
+}
