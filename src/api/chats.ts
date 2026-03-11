@@ -152,3 +152,14 @@ export async function createChat(input: CreateChatPayload = {}) {
     updatedAt: new Date().toISOString(),
   }
 }
+
+export async function deleteChat(chatId: string) {
+  const workspaceId = getWorkspaceId()
+
+  await requestJson(
+    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

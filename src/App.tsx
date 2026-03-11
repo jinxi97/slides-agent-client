@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Switch } from './components/ui/switch'
-import { createChat, listChats, type ChatSummary } from './api/chats'
+import { createChat, deleteChat, listChats, type ChatSummary } from './api/chats'
 
 type ThemeMode = 'dark' | 'light'
 
@@ -31,9 +31,14 @@ type Message = {
   text: string
 }
 
+type ChatContextMenuState = {
+  chat: ChatSummary
+  x: number
+  y: number
+}
+
 const navItems = ['Features', 'Reviews', 'Pricing', 'About']
 const quickActions = ['Help me create a pitch deck', 'Change to neon style']
-const MAX_CHAT_COUNT = 3
 
 const messages: Message[] = [
   {
@@ -64,6 +69,8 @@ function App() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [isCreatingChat, setIsCreatingChat] = useState(false)
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<ChatContextMenuState | null>(null)
   const [chatError, setChatError] = useState<string | null>(null)
   const isDark = theme === 'dark'
   const chatGroups = groupChatsByDate(chats)
@@ -103,12 +110,31 @@ function App() {
     }
   }, [])
 
-  async function handleCreateChat() {
-    if (chats.length >= MAX_CHAT_COUNT) {
-      window.alert('You already have 3 chats. Remove one before creating a new chat.')
+  useEffect(() => {
+    if (!contextMenu) {
       return
     }
 
+    function handleCloseMenu() {
+      setContextMenu(null)
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setContextMenu(null)
+      }
+    }
+
+    window.addEventListener('click', handleCloseMenu)
+    window.addEventListener('keydown', handleEscape)
+
+    return () => {
+      window.removeEventListener('click', handleCloseMenu)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [contextMenu])
+
+  async function handleCreateChat() {
     try {
       setIsCreatingChat(true)
       setChatError(null)
@@ -123,6 +149,33 @@ function App() {
       setChatError(getErrorMessage(error))
     } finally {
       setIsCreatingChat(false)
+    }
+  }
+
+  async function handleDeleteChat(chat: ChatSummary) {
+    try {
+      setDeletingChatId(chat.id)
+      setContextMenu(null)
+      setChatError(null)
+      await deleteChat(chat.id)
+
+      setChats((currentChats) => {
+        const nextChats = currentChats.filter((currentChat) => currentChat.id !== chat.id)
+
+        setActiveChatId((currentActiveChatId) => {
+          if (currentActiveChatId !== chat.id) {
+            return currentActiveChatId
+          }
+
+          return nextChats[0]?.id ?? null
+        })
+
+        return nextChats
+      })
+    } catch (error) {
+      setChatError(getErrorMessage(error))
+    } finally {
+      setDeletingChatId(null)
     }
   }
 
@@ -181,9 +234,19 @@ function App() {
                       className={`flex w-full items-center gap-2.5 rounded-[6px] px-3 py-2.5 text-left text-[13px] text-[var(--text-primary)] transition-colors ${
                         isActive ? 'bg-[var(--surface-active)]' : 'hover:bg-[var(--surface-hover)]'
                       }`}
+                      disabled={deletingChatId === chat.id}
                       key={chat.id}
+                      onContextMenu={(event) => {
+                        event.preventDefault()
+                        setContextMenu({
+                          chat,
+                          x: event.clientX,
+                          y: event.clientY,
+                        })
+                      }}
                       onClick={() => setActiveChatId(chat.id)}
                       type="button"
+                      title="Right click to delete"
                     >
                       <MessageSquare className="size-[14px] text-[var(--text-muted)]" />
                       <span className="truncate">{chat.title}</span>
@@ -208,6 +271,25 @@ function App() {
             />
           </div>
         </aside>
+
+        {contextMenu ? (
+          <div
+            className="fixed z-50 min-w-36 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--sidebar-bg)] p-1 shadow-[0_12px_32px_rgba(0,0,0,0.22)]"
+            style={{
+              left: Math.min(contextMenu.x, window.innerWidth - 160),
+              top: Math.min(contextMenu.y, window.innerHeight - 60),
+            }}
+          >
+            <button
+              className="flex w-full items-center rounded-[8px] px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-[var(--surface-hover)]"
+              disabled={deletingChatId === contextMenu.chat.id}
+              onClick={() => void handleDeleteChat(contextMenu.chat)}
+              type="button"
+            >
+              Delete
+            </button>
+          </div>
+        ) : null}
 
         <main className="flex min-h-[38rem] flex-col bg-[var(--preview-shell)] xl:min-h-screen">
           <header className="flex h-12 items-center justify-between border-b border-[var(--border-subtle)] px-4">
