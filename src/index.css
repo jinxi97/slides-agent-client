@@ -1,68 +1,81 @@
+@import "tailwindcss";
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --ring: #3b82f6;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.theme-dark {
+  --app-bg: #0a0a0a;
+  --sidebar-bg: #18181b;
+  --preview-shell: #0a0a0a;
+  --preview-bg: #1a1a1a;
+  --preview-glow: rgba(255, 255, 255, 0.04);
+  --chat-bg: #171717;
+  --panel: #171717;
+  --surface-elevated: #262626;
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --surface-active: #2a2a30;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-muted: #a3a3a3;
+  --hero-title: #ffffff;
+  --hero-subtitle: #777777;
+  --button-primary-bg: #f5f5f5;
+  --button-primary-text: #0a0a0a;
+  --button-secondary-bg: transparent;
+  --button-secondary-text: #fafafa;
+  --assistant-bubble-bg: #262626;
+  --assistant-bubble-text: #f5f5f5;
+  --user-bubble-bg: #e5e5e5;
+  --user-bubble-text: #171717;
+  --switch-track-bg: #e5e5e5;
+  --switch-track-border: rgba(255, 255, 255, 0.04);
+  --switch-thumb-bg: #0a0a0a;
+  --switch-thumb-border: rgba(255, 255, 255, 0.06);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.theme-light {
+  --app-bg: #fafafa;
+  --sidebar-bg: #fafafa;
+  --preview-shell: #fafafa;
+  --preview-bg: #f5f5f5;
+  --preview-glow: rgba(0, 0, 0, 0.03);
+  --chat-bg: #fafafa;
+  --panel: #fafafa;
+  --surface-elevated: #f5f5f5;
+  --surface-hover: rgba(0, 0, 0, 0.04);
+  --surface-active: #f4f4f4;
+  --border-subtle: #e5e5e5;
+  --border-strong: #e5e5e5;
+  --text-primary: #0a0a0a;
+  --text-secondary: #737373;
+  --text-muted: #737373;
+  --hero-title: #0a0a0a;
+  --hero-subtitle: #737373;
+  --button-primary-bg: #0a0a0a;
+  --button-primary-text: #fafafa;
+  --button-secondary-bg: transparent;
+  --button-secondary-text: #171717;
+  --assistant-bubble-bg: #f5f5f5;
+  --assistant-bubble-text: #171717;
+  --user-bubble-bg: #171717;
+  --user-bubble-text: #fafafa;
+  --switch-track-bg: #e5e5e5;
+  --switch-track-border: rgba(10, 10, 10, 0.04);
+  --switch-thumb-bg: #fafafa;
+  --switch-thumb-border: rgba(10, 10, 10, 0.06);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+
+  body {
+    font-family: Inter, "SF Pro Display", "Segoe UI", sans-serif;
   }
 }
