@@ -79,3 +79,94 @@
     font-family: Inter, "SF Pro Display", "Segoe UI", sans-serif;
   }
 }
+
+.prose-chat {
+  & > *:first-child {
+    margin-top: 0;
+  }
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0.4em 0;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  code {
+    font-size: 0.9em;
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, 0.15);
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  }
+
+  pre {
+    margin: 0.5em 0;
+    padding: 0.6em 0.8em;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.2);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+
+    code {
+      padding: 0;
+      background: none;
+      border-radius: 0;
+    }
+  }
+
+  ul,
+  ol {
+    margin: 0.4em 0;
+    padding-left: 1.4em;
+  }
+
+  ul {
+    list-style-type: disc;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  li {
+    margin: 0.15em 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin: 0.6em 0 0.3em;
+  }
+
+  h1 { font-size: 1.2em; }
+  h2 { font-size: 1.1em; }
+  h3 { font-size: 1.05em; }
+
+  blockquote {
+    margin: 0.4em 0;
+    padding-left: 0.8em;
+    border-left: 2px solid rgba(128, 128, 128, 0.3);
+    color: var(--text-muted);
+  }
+
+  a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  hr {
+    margin: 0.6em 0;
+    border: none;
+    border-top: 1px solid var(--border-subtle);
+  }
+}

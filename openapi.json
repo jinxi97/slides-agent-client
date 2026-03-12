@@ -1,678 +1,21 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-      "title": "FastAPI",
-      "version": "0.1.0"
-    },
-    "paths": {
-      "/": {
-        "get": {
-          "summary": "Root",
-          "operationId": "root__get",
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/healthz": {
-        "get": {
-          "summary": "Healthz",
-          "operationId": "healthz_healthz_get",
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/agent-workspaces": {
-        "post": {
-          "summary": "Create Agent Workspace",
-          "operationId": "create_agent_workspace_agent_workspaces_post",
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces": {
-        "post": {
-          "summary": "Create Workspace",
-          "operationId": "create_workspace_workspaces_post",
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/execute": {
-        "post": {
-          "summary": "Exec Command",
-          "operationId": "exec_command_execute_post",
-          "requestBody": {
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExecuteRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}/chats": {
-        "post": {
-          "summary": "Create Chat",
-          "operationId": "create_chat_workspaces__workspace_id__chats_post",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateChatRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "201": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "get": {
-          "summary": "List Chats",
-          "operationId": "list_chats_workspaces__workspace_id__chats_get",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}/chats/{chat_id}/messages": {
-        "post": {
-          "summary": "Send Message",
-          "operationId": "send_message_workspaces__workspace_id__chats__chat_id__messages_post",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            },
-            {
-              "name": "chat_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Chat Id"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SendMessageRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "get": {
-          "summary": "Get Messages",
-          "operationId": "get_messages_workspaces__workspace_id__chats__chat_id__messages_get",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            },
-            {
-              "name": "chat_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Chat Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}/chats/{chat_id}": {
-        "get": {
-          "summary": "Get Chat",
-          "operationId": "get_chat_workspaces__workspace_id__chats__chat_id__get",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            },
-            {
-              "name": "chat_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Chat Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "delete": {
-          "summary": "Delete Chat",
-          "operationId": "delete_chat_workspaces__workspace_id__chats__chat_id__delete",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            },
-            {
-              "name": "chat_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Chat Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}/artifacts": {
-        "get": {
-          "summary": "Get Artifacts",
-          "operationId": "get_artifacts_workspaces__workspace_id__artifacts_get",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}/artifacts/file/{filename}": {
-        "get": {
-          "summary": "Serve Artifact File",
-          "operationId": "serve_artifact_file_workspaces__workspace_id__artifacts_file__filename__get",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            },
-            {
-              "name": "filename",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Filename"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/workspaces/{workspace_id}": {
-        "delete": {
-          "summary": "Delete Workspace",
-          "operationId": "delete_workspace_workspaces__workspace_id__delete",
-          "parameters": [
-            {
-              "name": "workspace_id",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Workspace Id"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/snapshots/triggers": {
-        "post": {
-          "summary": "Create Snapshot Trigger",
-          "operationId": "create_snapshot_trigger_snapshots_triggers_post",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SnapshotTriggerRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/snapshots/triggers/{trigger_name}": {
-        "delete": {
-          "summary": "Delete Snapshot Trigger",
-          "operationId": "delete_snapshot_trigger_snapshots_triggers__trigger_name__delete",
-          "parameters": [
-            {
-              "name": "trigger_name",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Trigger Name"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/snapshots/status": {
-        "get": {
-          "summary": "Get Snapshot Status",
-          "operationId": "get_snapshot_status_snapshots_status_get",
-          "parameters": [
-            {
-              "name": "trigger_name",
-              "in": "query",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "title": "Trigger Name"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/snapshots/restore": {
-        "post": {
-          "summary": "Restore From Snapshot",
-          "operationId": "restore_from_snapshot_snapshots_restore_post",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SnapshotRestoreRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "Successful Response",
-              "content": {
-                "application/json": {
-                  "schema": {
-  
-                  }
-                }
-              }
-            },
-            "422": {
-              "description": "Validation Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/HTTPValidationError"
-                  }
+
                 }
               }
             }
@@ -680,145 +23,802 @@
         }
       }
     },
-    "components": {
-      "schemas": {
-        "CreateChatRequest": {
-          "properties": {
-            "title": {
+    "/healthz": {
+      "get": {
+        "summary": "Healthz",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agent-workspaces": {
+      "post": {
+        "summary": "Create Agent Workspace",
+        "operationId": "create_agent_workspace_agent_workspaces_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces": {
+      "post": {
+        "summary": "Create Workspace",
+        "operationId": "create_workspace_workspaces_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/execute": {
+      "post": {
+        "summary": "Exec Command",
+        "operationId": "exec_command_execute_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}/chats": {
+      "post": {
+        "summary": "Create Chat",
+        "operationId": "create_chat_workspaces__workspace_id__chats_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Chats",
+        "operationId": "list_chats_workspaces__workspace_id__chats_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}/chats/{chat_id}/messages": {
+      "post": {
+        "summary": "Send Message",
+        "operationId": "send_message_workspaces__workspace_id__chats__chat_id__messages_post",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chat Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get Messages",
+        "operationId": "get_messages_workspaces__workspace_id__chats__chat_id__messages_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}/chats/{chat_id}": {
+      "get": {
+        "summary": "Get Chat",
+        "operationId": "get_chat_workspaces__workspace_id__chats__chat_id__get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Chat",
+        "operationId": "delete_chat_workspaces__workspace_id__chats__chat_id__delete",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "chat_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Chat Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}/artifacts": {
+      "get": {
+        "summary": "Get Artifacts",
+        "operationId": "get_artifacts_workspaces__workspace_id__artifacts_get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}/artifacts/file/{filename}": {
+      "get": {
+        "summary": "Serve Artifact File",
+        "operationId": "serve_artifact_file_workspaces__workspace_id__artifacts_file__filename__get",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspace_id}": {
+      "delete": {
+        "summary": "Delete Workspace",
+        "operationId": "delete_workspace_workspaces__workspace_id__delete",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/snapshots/triggers": {
+      "post": {
+        "summary": "Create Snapshot Trigger",
+        "operationId": "create_snapshot_trigger_snapshots_triggers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnapshotTriggerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/snapshots/triggers/{trigger_name}": {
+      "delete": {
+        "summary": "Delete Snapshot Trigger",
+        "operationId": "delete_snapshot_trigger_snapshots_triggers__trigger_name__delete",
+        "parameters": [
+          {
+            "name": "trigger_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trigger Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/snapshots/status": {
+      "get": {
+        "summary": "Get Snapshot Status",
+        "operationId": "get_snapshot_status_snapshots_status_get",
+        "parameters": [
+          {
+            "name": "trigger_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trigger Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/snapshots/restore": {
+      "post": {
+        "summary": "Restore From Snapshot",
+        "operationId": "restore_from_snapshot_snapshots_restore_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnapshotRestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateChatRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Optional chat title"
+          }
+        },
+        "type": "object",
+        "title": "CreateChatRequest",
+        "description": "Request model for the POST /workspaces/{workspace_id}/chats endpoint."
+      },
+      "ExecuteRequest": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id"
+          },
+          "command": {
+            "type": "string",
+            "title": "Command"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "command"
+        ],
+        "title": "ExecuteRequest",
+        "description": "Request model for the /execute endpoint."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "SendMessageRequest": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Content",
+            "description": "Message content to send"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "SendMessageRequest",
+        "description": "Request model for the POST /workspaces/{workspace_id}/chats/{chat_id}/messages endpoint."
+      },
+      "SnapshotRestoreRequest": {
+        "properties": {
+          "snapshot_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Snapshot Name",
+            "description": "Exact PodSnapshot name to restore from"
+          }
+        },
+        "type": "object",
+        "required": [
+          "snapshot_name"
+        ],
+        "title": "SnapshotRestoreRequest"
+      },
+      "SnapshotTriggerRequest": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Workspace Id",
+            "description": "Workspace ID returned by POST /workspaces"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id"
+        ],
+        "title": "SnapshotTriggerRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
               "anyOf": [
                 {
                   "type": "string"
                 },
                 {
-                  "type": "null"
+                  "type": "integer"
                 }
-              ],
-              "title": "Title",
-              "description": "Optional chat title"
-            }
-          },
-          "type": "object",
-          "title": "CreateChatRequest",
-          "description": "Request model for the POST /workspaces/{workspace_id}/chats endpoint."
-        },
-        "ExecuteRequest": {
-          "properties": {
-            "workspace_id": {
-              "type": "string",
-              "title": "Workspace Id"
+              ]
             },
-            "command": {
-              "type": "string",
-              "title": "Command"
-            }
+            "type": "array",
+            "title": "Location"
           },
-          "type": "object",
-          "required": [
-            "workspace_id",
-            "command"
-          ],
-          "title": "ExecuteRequest",
-          "description": "Request model for the /execute endpoint."
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
         },
-        "HTTPValidationError": {
-          "properties": {
-            "detail": {
-              "items": {
-                "$ref": "#/components/schemas/ValidationError"
-              },
-              "type": "array",
-              "title": "Detail"
-            }
-          },
-          "type": "object",
-          "title": "HTTPValidationError"
-        },
-        "SendMessageRequest": {
-          "properties": {
-            "content": {
-              "type": "string",
-              "minLength": 1,
-              "title": "Content",
-              "description": "Message content to send"
-            }
-          },
-          "type": "object",
-          "required": [
-            "content"
-          ],
-          "title": "SendMessageRequest",
-          "description": "Request model for the POST /workspaces/{workspace_id}/chats/{chat_id}/messages endpoint."
-        },
-        "SnapshotRestoreRequest": {
-          "properties": {
-            "snapshot_name": {
-              "type": "string",
-              "minLength": 1,
-              "title": "Snapshot Name",
-              "description": "Exact PodSnapshot name to restore from"
-            }
-          },
-          "type": "object",
-          "required": [
-            "snapshot_name"
-          ],
-          "title": "SnapshotRestoreRequest"
-        },
-        "SnapshotTriggerRequest": {
-          "properties": {
-            "workspace_id": {
-              "type": "string",
-              "minLength": 1,
-              "title": "Workspace Id",
-              "description": "Workspace ID returned by POST /workspaces"
-            }
-          },
-          "type": "object",
-          "required": [
-            "workspace_id"
-          ],
-          "title": "SnapshotTriggerRequest"
-        },
-        "ValidationError": {
-          "properties": {
-            "loc": {
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "integer"
-                  }
-                ]
-              },
-              "type": "array",
-              "title": "Location"
-            },
-            "msg": {
-              "type": "string",
-              "title": "Message"
-            },
-            "type": {
-              "type": "string",
-              "title": "Error Type"
-            },
-            "input": {
-              "title": "Input"
-            },
-            "ctx": {
-              "type": "object",
-              "title": "Context"
-            }
-          },
-          "type": "object",
-          "required": [
-            "loc",
-            "msg",
-            "type"
-          ],
-          "title": "ValidationError"
-        }
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }
+}
