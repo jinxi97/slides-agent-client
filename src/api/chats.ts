@@ -270,6 +270,60 @@ export async function answerQuestion(
   )
 }
 
+export async function getArtifacts(chatId: string): Promise<string[]> {
+  const workspaceId = getWorkspaceId()
+  const payload = await requestJson(
+    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}/artifacts`,
+  )
+
+  // Handle array of strings directly
+  if (Array.isArray(payload)) {
+    return payload
+      .map((item) => {
+        if (typeof item === 'string') return item
+        const obj = getObject(item)
+        return obj
+          ? getTextValue(obj.path) || getTextValue(obj.file_path) || getTextValue(obj.name)
+          : ''
+      })
+      .filter(Boolean)
+  }
+
+  // Handle wrapped response { artifacts: [...], files: [...], etc. }
+  const record = getObject(payload)
+  if (record) {
+    for (const key of ['artifacts', 'files', 'items', 'data']) {
+      const candidate = record[key]
+      if (Array.isArray(candidate)) {
+        return candidate
+          .map((item) => {
+            if (typeof item === 'string') return item
+            const obj = getObject(item)
+            return obj
+              ? getTextValue(obj.path) || getTextValue(obj.file_path) || getTextValue(obj.name)
+              : ''
+          })
+          .filter(Boolean)
+      }
+    }
+  }
+
+  return []
+}
+
+export function getFileDownloadUrl(filePath: string): string {
+  const workspaceId = getWorkspaceId()
+  // filePath is workspace-relative (e.g., "artifacts/funky-pitch.html")
+  // Each segment needs encoding but slashes must be preserved
+  const encodedPath = filePath
+    .split('/')
+    .map((s) => encodeURIComponent(s))
+    .join('/')
+  return buildApiUrl(
+    `/workspaces/${encodeURIComponent(workspaceId)}/files/download/${encodedPath}`,
+  )
+}
+
 export type SendMessageCallbacks = {
   onBlocks?: (blocks: ContentBlock[]) => void
 }

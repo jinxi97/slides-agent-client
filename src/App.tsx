@@ -27,6 +27,8 @@ import {
   answerQuestion,
   createChat,
   deleteChat,
+  getArtifacts,
+  getFileDownloadUrl,
   getMessages,
   listChats,
   sendMessage,
@@ -48,7 +50,6 @@ type ChatContextMenuState = {
   y: number
 }
 
-const navItems = ['Features', 'Reviews', 'Pricing', 'About']
 const quickActions = ['Help me create a pitch deck', 'Change to neon style']
 
 function App() {
@@ -69,6 +70,10 @@ function App() {
     currentIndex: number
     answers: string[]
   } | null>(null)
+  const [artifactFiles, setArtifactFiles] = useState<string[]>([])
+  const [activeArtifact, setActiveArtifact] = useState<string | null>(null)
+  const [artifactVersion, setArtifactVersion] = useState(0)
+  const [artifactBlobUrl, setArtifactBlobUrl] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isInitialScrollRef = useRef(true)
@@ -175,6 +180,110 @@ function App() {
     isInitialScrollRef.current = false
   }, [messages])
 
+  useEffect(() => {
+    if (!activeArtifact) {
+      setArtifactBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+      return
+    }
+
+    let revoked = false
+    const url = getFileDownloadUrl(activeArtifact)
+
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch artifact')
+        return res.blob()
+      })
+      .then((blob) => {
+        if (revoked) return
+        // Re-create blob with correct MIME type based on extension
+        const ext = activeArtifact.split('.').pop()?.toLowerCase()
+        const mimeMap: Record<string, string> = {
+          html: 'text/html',
+          css: 'text/css',
+          js: 'application/javascript',
+          json: 'application/json',
+          svg: 'image/svg+xml',
+          png: 'image/png',
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+        }
+        const mime = mimeMap[ext ?? ''] ?? blob.type
+        const typed = new Blob([blob], { type: mime })
+        const blobUrl = URL.createObjectURL(typed)
+        setArtifactBlobUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev)
+          return blobUrl
+        })
+      })
+      .catch(() => {
+        if (!revoked) setArtifactBlobUrl(null)
+      })
+
+    return () => {
+      revoked = true
+      setArtifactBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+    }
+  }, [activeArtifact, artifactVersion])
+
+  // Poll artifacts from backend
+  useEffect(() => {
+    if (!activeChatId) {
+      setArtifactFiles([])
+      setActiveArtifact(null)
+      return
+    }
+
+    let cancelled = false
+    let prevSnapshot = ''
+
+    async function fetchArtifacts() {
+      try {
+        const paths = await getArtifacts(activeChatId!)
+        if (cancelled) return
+
+        // Only update state when the list actually changes
+        const snapshot = JSON.stringify(paths)
+        if (snapshot === prevSnapshot) return
+        prevSnapshot = snapshot
+
+        setArtifactFiles(paths)
+        if (paths.length > 0) {
+          setActiveArtifact((current) =>
+            current && paths.includes(current) ? current : paths[paths.length - 1],
+          )
+          setArtifactVersion((v) => v + 1)
+        } else {
+          setActiveArtifact(null)
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }
+
+    // Initial fetch
+    void fetchArtifacts()
+
+    // Poll every 3s while the agent is active
+    if (isSendingMessage) {
+      const interval = setInterval(() => void fetchArtifacts(), 3000)
+      return () => {
+        cancelled = true
+        clearInterval(interval)
+      }
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeChatId, isSendingMessage])
+
   async function handleSendMessage(content: string) {
     const trimmed = content.trim()
 
@@ -199,20 +308,26 @@ function App() {
     }
 
     const streamingId = `streaming-${Date.now()}`
+    let lastSeenBlockCount = 0
 
     try {
       const result = await sendMessage(activeChatId, trimmed, {
         onBlocks(blocks) {
-          // Check if an AskUserQuestion just arrived
-          const lastBlock = blocks[blocks.length - 1]
-          if (lastBlock && lastBlock.type === 'tool' && lastBlock.name === 'AskUserQuestion') {
-            const questions = Array.isArray(lastBlock.input.questions)
-              ? (lastBlock.input.questions as AskUserQuestion[])
-              : []
-            if (questions.length > 0) {
-              setPendingQuestion({ questions, currentIndex: 0, answers: [] })
+          // Check new blocks for AskUserQuestion
+          for (let i = lastSeenBlockCount; i < blocks.length; i++) {
+            const block = blocks[i]
+            if (block.type !== 'tool') continue
+
+            if (block.name === 'AskUserQuestion') {
+              const questions = Array.isArray(block.input.questions)
+                ? (block.input.questions as AskUserQuestion[])
+                : []
+              if (questions.length > 0) {
+                setPendingQuestion({ questions, currentIndex: 0, answers: [] })
+              }
             }
           }
+          lastSeenBlockCount = blocks.length
 
           const textContent = blocks
             .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
@@ -269,6 +384,7 @@ function App() {
           return prev
         })
       }
+
     } catch (error) {
       // Remove optimistic message on error
       setMessages((prev) =>
@@ -479,69 +595,73 @@ function App() {
 
         <main className="flex min-h-[38rem] flex-col bg-[var(--preview-shell)] xl:min-h-screen">
           <header className="flex h-12 items-center justify-between border-b border-[var(--border-subtle)] px-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 overflow-hidden">
               <Button size="icon" variant="ghost" aria-label="Collapse sidebar">
                 <PanelLeftClose className="size-[18px]" />
               </Button>
-              <div className="flex items-center gap-0.5">
-                <div className="rounded-[6px] bg-[var(--surface-elevated)] px-2.5 py-1.5 text-xs text-[var(--text-primary)]">
-                  index.html
-                </div>
-                <div className="rounded-[6px] px-2.5 py-1.5 text-xs text-[var(--text-muted)]">
-                  style.css
-                </div>
-                <div className="rounded-[6px] px-2.5 py-1.5 text-xs text-[var(--text-muted)]">
-                  main.jsx
-                </div>
+              <div className="flex items-center gap-0.5 overflow-x-auto">
+                {artifactFiles.length > 0
+                  ? artifactFiles.map((file) => (
+                      <button
+                        className={`shrink-0 rounded-[6px] px-2.5 py-1.5 text-xs transition-colors ${
+                          file === activeArtifact
+                            ? 'bg-[var(--surface-elevated)] text-[var(--text-primary)]'
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                        }`}
+                        key={file}
+                        onClick={() => setActiveArtifact(file)}
+                        type="button"
+                      >
+                        {getFileName(file)}
+                      </button>
+                    ))
+                  : (
+                    <span className="px-2.5 py-1.5 text-xs text-[var(--text-muted)]">
+                      No artifacts yet
+                    </span>
+                  )}
               </div>
             </div>
 
             <div className="flex items-center gap-1">
-              <Button size="icon" variant="ghost" aria-label="Refresh preview">
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Refresh preview"
+                onClick={() => setArtifactVersion((v) => v + 1)}
+              >
                 <RefreshCw className="size-4" />
               </Button>
-              <Button size="icon" variant="ghost" aria-label="Open in new tab">
-                <ExternalLink className="size-4" />
-              </Button>
+              {activeArtifact ? (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Open in new tab"
+                  onClick={() => window.open(getFileDownloadUrl(activeArtifact), '_blank')}
+                >
+                  <ExternalLink className="size-4" />
+                </Button>
+              ) : null}
               <Button size="icon" variant="ghost" aria-label="Download output">
                 <Download className="size-4" />
               </Button>
             </div>
           </header>
 
-          <section className="flex flex-1 items-center justify-center bg-[radial-gradient(circle_at_top,var(--preview-glow),transparent_45%)] bg-[var(--preview-bg)] px-8 py-8">
-            <div className="w-full max-w-[560px] pb-16">
-              <div className="flex items-center justify-between pb-6">
-                <div className="text-[18px] font-bold tracking-[-0.04em]">MyBrand</div>
-                <nav className="flex items-center gap-6" aria-label="Preview site">
-                  {navItems.map((item) => (
-                    <a
-                      className="text-xs text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
-                      href="/"
-                      key={item}
-                      onClick={(event) => event.preventDefault()}
-                    >
-                      {item}
-                    </a>
-                  ))}
-                </nav>
+          {activeArtifact && artifactBlobUrl ? (
+            <iframe
+              className="flex-1 border-0 bg-white"
+              key={`${activeArtifact}-${artifactVersion}`}
+              src={artifactBlobUrl}
+              title={activeArtifact}
+            />
+          ) : (
+            <section className="flex flex-1 items-center justify-center bg-[var(--preview-bg)]">
+              <div className="text-center text-sm text-[var(--text-muted)]">
+                <p>Send a message to generate artifacts.</p>
               </div>
-
-              <div className="flex flex-col items-center gap-4 pt-12 text-center">
-                <h1 className="max-w-[500px] text-[clamp(2.2rem,3vw,3rem)] font-bold leading-[1.05] tracking-[-0.05em] text-[var(--hero-title)]">
-                  Build faster with our platform
-                </h1>
-                <p className="max-w-[420px] text-[14px] leading-[1.6] text-[var(--hero-subtitle)]">
-                  The modern toolkit for developers who want to ship beautiful
-                  products without the complexity.
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <Button>Get Started</Button>
-                  <Button variant="secondary">Learn More</Button>
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
         </main>
 
         <section className="flex min-h-[340px] flex-col overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--chat-bg)] xl:h-screen xl:min-h-0 xl:border-l xl:border-t-0">
@@ -858,6 +978,10 @@ function getRelativeChatBucket(chat: ChatSummary) {
   }
 
   return 'Earlier'
+}
+
+function getFileName(filePath: string): string {
+  return filePath.split('/').pop() ?? filePath
 }
 
 function getErrorMessage(error: unknown) {
