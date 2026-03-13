@@ -39,5 +39,5 @@ substitutions:
   _REGION: us-central1
   _REPO: funky
   _SERVICE_NAME: slides-agent-client
-  _API_BASE_URL: http://136.119.30.96/
-  _GOOGLE_CLIENT_ID: 819221826816-5v3r7pgtj96l56cs3770vesaa79r9rk5.apps.googleusercontent.com
+  _API_BASE_URL: ''
+  _GOOGLE_CLIENT_ID: ''
