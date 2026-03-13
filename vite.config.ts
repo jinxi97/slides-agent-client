@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __API_BASE_URL__: JSON.stringify(env.API_BASE_URL ?? ''),
-      __WORKSPACE_ID__: JSON.stringify(env.WORKSPACE_ID ?? '__WORKSPACE_ID__'),
+      __GOOGLE_CLIENT_ID__: JSON.stringify(env.GOOGLE_CLIENT_ID ?? ''),
     },
     plugins: [react(), tailwindcss()],
   }

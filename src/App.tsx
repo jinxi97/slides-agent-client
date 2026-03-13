@@ -27,6 +27,7 @@ import {
   answerQuestion,
   createChat,
   deleteChat,
+  fetchWithAuth,
   getArtifacts,
   getFileDownloadUrl,
   getMessages,
@@ -52,7 +53,7 @@ type ChatContextMenuState = {
 
 const quickActions = ['Help me create a pitch deck', 'Change to neon style']
 
-function App() {
+function App({ onSignOut }: { onSignOut?: () => void }) {
   const [theme, setTheme] = useState<ThemeMode>('light')
   const [chats, setChats] = useState<ChatSummary[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
@@ -192,7 +193,7 @@ function App() {
     let revoked = false
     const url = getFileDownloadUrl(activeArtifact)
 
-    fetch(url)
+    fetchWithAuth(url)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch artifact')
         return res.blob()
@@ -559,18 +560,28 @@ function App() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 border-t border-[var(--border-subtle)] px-1 pt-2 text-[var(--text-muted)]">
-            <Sun
-              className={`size-4 transition-all duration-300 ${!isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
-            />
-            <Switch
-              aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-              checked={isDark}
-              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            />
-            <Moon
-              className={`size-4 transition-all duration-300 ${isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
-            />
+          <div className="flex items-center justify-between border-t border-[var(--border-subtle)] px-1 pt-2 text-[var(--text-muted)]">
+            <div className="flex items-center gap-2">
+              <Sun
+                className={`size-4 transition-all duration-300 ${!isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
+              />
+              <Switch
+                aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                checked={isDark}
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+              />
+              <Moon
+                className={`size-4 transition-all duration-300 ${isDark ? 'scale-100 text-[var(--text-primary)]' : 'scale-90 text-[var(--text-muted)]'}`}
+              />
+            </div>
+            {onSignOut && (
+              <button
+                className="rounded-md px-2 py-1 text-xs text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                onClick={onSignOut}
+              >
+                Sign out
+              </button>
+            )}
           </div>
         </aside>
 

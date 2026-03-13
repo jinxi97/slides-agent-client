@@ -24,7 +24,6 @@ type CreateChatPayload = {
 type JsonRecord = Record<string, unknown>
 
 const API_BASE_URL = __API_BASE_URL__
-const WORKSPACE_ID = __WORKSPACE_ID__
 
 function buildApiUrl(path: string) {
   const baseUrl = API_BASE_URL.trim()
@@ -37,13 +36,21 @@ function buildApiUrl(path: string) {
 }
 
 function getWorkspaceId() {
-  const workspaceId = WORKSPACE_ID.trim()
+  const workspaceId = localStorage.getItem('workspace_id') ?? ''
 
-  if (!workspaceId || workspaceId === '__WORKSPACE_ID__') {
-    throw new Error('Workspace macro is not set.')
+  if (!workspaceId) {
+    throw new Error('Not authenticated — no workspace_id found.')
   }
 
   return workspaceId
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    return { Authorization: `Bearer ${token}` }
+  }
+  return {}
 }
 
 function getTextValue(value: unknown, fallback = '') {
@@ -117,6 +124,7 @@ async function requestJson(path: string, init?: RequestInit) {
   const response = await fetch(buildApiUrl(path), {
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
       ...(init?.headers ?? {}),
     },
     ...init,
@@ -324,6 +332,17 @@ export function getFileDownloadUrl(filePath: string): string {
   )
 }
 
+/** Fetch with auth headers attached. Use for artifact downloads, etc. */
+export function fetchWithAuth(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, {
+    ...init,
+    headers: {
+      ...getAuthHeaders(),
+      ...(init?.headers ?? {}),
+    },
+  })
+}
+
 export type SendMessageCallbacks = {
   onBlocks?: (blocks: ContentBlock[]) => void
 }
@@ -340,7 +359,7 @@ export async function sendMessage(
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({ content }),
   })
 
