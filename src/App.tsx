@@ -387,11 +387,18 @@ function App({ onSignOut }: { onSignOut?: () => void }) {
       }
 
     } catch (error) {
-      // Remove optimistic message on error
-      setMessages((prev) =>
-        prev.filter((m) => m.id !== optimisticMessage.id && m.id !== streamingId),
-      )
-      setChatError(getErrorMessage(error))
+      // Only remove messages if nothing was streamed yet.
+      // If the assistant already responded (e.g. during AskUserQuestion wait),
+      // keep the messages — they contain real content the user has already seen.
+      setMessages((prev) => {
+        const streamingMsg = prev.find((m) => m.id === streamingId)
+        const hasContent = streamingMsg?.blocks && streamingMsg.blocks.length > 0
+        if (hasContent) return prev
+        return prev.filter((m) => m.id !== optimisticMessage.id && m.id !== streamingId)
+      })
+      if (!pendingQuestion) {
+        setChatError(getErrorMessage(error))
+      }
     } finally {
       setIsSendingMessage(false)
     }
