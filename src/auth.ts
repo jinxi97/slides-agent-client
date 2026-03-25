@@ -1,11 +1,15 @@
 const AUTH_TOKEN_KEY = 'auth_token'
-const WORKSPACE_ID_KEY = 'workspace_id'
+const CLAIM_NAME_KEY = 'claim_name'
+const NAMESPACE_KEY = 'namespace'
+const POD_NAME_KEY = 'pod_name'
 const API_BASE_URL = __API_BASE_URL__
 const GOOGLE_CLIENT_ID = __GOOGLE_CLIENT_ID__
 
 export type StoredAuth = {
   token: string
-  workspaceId: string
+  claimName: string
+  namespace: string
+  podName: string
 }
 
 /* ------------------------------------------------------------------ */
@@ -14,21 +18,32 @@ export type StoredAuth = {
 
 export function getStoredAuth(): StoredAuth | null {
   const token = localStorage.getItem(AUTH_TOKEN_KEY)
-  const workspaceId = localStorage.getItem(WORKSPACE_ID_KEY)
-  if (token && workspaceId) {
-    return { token, workspaceId }
+  const claimName = localStorage.getItem(CLAIM_NAME_KEY)
+  const namespace = localStorage.getItem(NAMESPACE_KEY)
+  const podName = localStorage.getItem(POD_NAME_KEY)
+  if (token && claimName && namespace && podName) {
+    return { token, claimName, namespace, podName }
   }
   return null
 }
 
-export function setStoredAuth(token: string, workspaceId: string) {
+export function setStoredAuth(
+  token: string,
+  claimName: string,
+  namespace: string,
+  podName: string,
+) {
   localStorage.setItem(AUTH_TOKEN_KEY, token)
-  localStorage.setItem(WORKSPACE_ID_KEY, workspaceId)
+  localStorage.setItem(CLAIM_NAME_KEY, claimName)
+  localStorage.setItem(NAMESPACE_KEY, namespace)
+  localStorage.setItem(POD_NAME_KEY, podName)
 }
 
 export function clearStoredAuth() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
-  localStorage.removeItem(WORKSPACE_ID_KEY)
+  localStorage.removeItem(CLAIM_NAME_KEY)
+  localStorage.removeItem(NAMESPACE_KEY)
+  localStorage.removeItem(POD_NAME_KEY)
 }
 
 /* ------------------------------------------------------------------ */
@@ -103,10 +118,16 @@ export async function signInWithGoogle(
 /*  Backend token exchange                                             */
 /* ------------------------------------------------------------------ */
 
+export type AccountResponse = {
+  user_id: string
+  token: string
+  workspace: { claim_name: string; template_name: string; namespace?: string } | null
+}
+
 export async function exchangeGoogleToken(
   idToken: string,
-): Promise<{ workspace_id: string; token: string }> {
-  const url = `${API_BASE_URL.replace(/\/$/, '')}/auth/google`
+): Promise<AccountResponse> {
+  const url = `${API_BASE_URL.replace(/\/$/, '')}/account`
 
   const resp = await fetch(url, {
     method: 'POST',
@@ -122,6 +143,90 @@ export async function exchangeGoogleToken(
   }
 
   return resp.json()
+}
+
+/* ------------------------------------------------------------------ */
+/*  Workspace creation                                                 */
+/* ------------------------------------------------------------------ */
+
+export type WorkspaceResponse = {
+  claim_name: string
+  namespace: string
+  template_name: string
+  status: string
+}
+
+export async function createWorkspace(
+  token: string,
+): Promise<WorkspaceResponse> {
+  const url = `${API_BASE_URL.replace(/\/$/, '')}/workspaces-with-agent`
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({}))
+    throw new Error(
+      (body as Record<string, string>).detail ??
+        `Workspace creation failed (${resp.status})`,
+    )
+  }
+
+  return resp.json()
+}
+
+/* ------------------------------------------------------------------ */
+/*  Wait for workspace sandbox to become ready (SSE events)            */
+/* ------------------------------------------------------------------ */
+
+export function waitForWorkspaceReady(
+  claimName: string,
+  namespace: string,
+): Promise<string> {
+  const baseUrl = API_BASE_URL.replace(/\/$/, '')
+  const url = `${baseUrl}/workspaces/${encodeURIComponent(claimName)}/events?namespace=${encodeURIComponent(namespace)}`
+
+  return new Promise((resolve, reject) => {
+    const eventSource = new EventSource(url)
+
+    eventSource.addEventListener('status', (event) => {
+      try {
+        const data = JSON.parse(event.data) as Record<string, unknown>
+
+        if (data.status === 'ready') {
+          const sandbox = data.sandbox as
+            | Record<string, unknown>
+            | undefined
+          const podName =
+            (sandbox?.pod_name as string) ??
+            (sandbox?.sandbox_name as string) ??
+            ''
+          eventSource.close()
+          resolve(podName)
+        } else if (data.status === 'failed') {
+          eventSource.close()
+          reject(
+            new Error(
+              (data.detail as string) ?? 'Workspace setup failed',
+            ),
+          )
+        }
+        // "creating" events are heartbeats — ignore
+      } catch {
+        // ignore parse errors on individual events
+      }
+    })
+
+    eventSource.onerror = () => {
+      eventSource.close()
+      reject(new Error('Lost connection while waiting for workspace'))
+    }
+  })
 }
 
 export function getGoogleClientId() {

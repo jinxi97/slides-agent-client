@@ -35,14 +35,28 @@ function buildApiUrl(path: string) {
   return `${baseUrl.replace(/\/$/, '')}${path}`
 }
 
-function getWorkspaceId() {
-  const workspaceId = localStorage.getItem('workspace_id') ?? ''
+function getClaimName() {
+  const claimName = localStorage.getItem('claim_name') ?? ''
 
-  if (!workspaceId) {
-    throw new Error('Not authenticated — no workspace_id found.')
+  if (!claimName) {
+    throw new Error('Not authenticated — no claim_name found.')
   }
 
-  return workspaceId
+  return claimName
+}
+
+function getNamespace() {
+  return localStorage.getItem('namespace') ?? ''
+}
+
+function getPodName() {
+  return localStorage.getItem('pod_name') ?? ''
+}
+
+function buildWorkspaceQueryParams() {
+  const ns = getNamespace()
+  const pod = getPodName()
+  return `namespace=${encodeURIComponent(ns)}&pod_name=${encodeURIComponent(pod)}`
 }
 
 function getAuthHeaders(): Record<string, string> {
@@ -143,9 +157,9 @@ async function requestJson(path: string, init?: RequestInit) {
 }
 
 export async function listChats() {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   const payload = await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats?${buildWorkspaceQueryParams()}`,
   )
 
   return getChatCandidateList(payload)
@@ -154,9 +168,9 @@ export async function listChats() {
 }
 
 export async function createChat(input: CreateChatPayload = {}) {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   const payload = await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats?${buildWorkspaceQueryParams()}`,
     {
       method: 'POST',
       body: JSON.stringify({
@@ -174,10 +188,10 @@ export async function createChat(input: CreateChatPayload = {}) {
 }
 
 export async function deleteChat(chatId: string) {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
 
   await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats/${encodeURIComponent(chatId)}?${buildWorkspaceQueryParams()}`,
     {
       method: 'DELETE',
     },
@@ -252,9 +266,9 @@ function normalizeMessage(message: unknown, index: number): ChatMessage | null {
 }
 
 export async function getMessages(chatId: string) {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   const payload = await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}/messages`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats/${encodeURIComponent(chatId)}/messages?${buildWorkspaceQueryParams()}`,
   )
 
   const candidates = getChatCandidateList(payload)
@@ -268,9 +282,9 @@ export async function answerQuestion(
   chatId: string,
   answers: Record<string, string>,
 ): Promise<void> {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}/answer`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats/${encodeURIComponent(chatId)}/answer?${buildWorkspaceQueryParams()}`,
     {
       method: 'POST',
       body: JSON.stringify({ answers }),
@@ -279,9 +293,9 @@ export async function answerQuestion(
 }
 
 export async function getArtifacts(chatId: string): Promise<string[]> {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   const payload = await requestJson(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}/artifacts`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats/${encodeURIComponent(chatId)}/artifacts?${buildWorkspaceQueryParams()}`,
   )
 
   // Handle array of strings directly
@@ -320,7 +334,7 @@ export async function getArtifacts(chatId: string): Promise<string[]> {
 }
 
 export function getFileDownloadUrl(filePath: string): string {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   // filePath is workspace-relative (e.g., "artifacts/funky-pitch.html")
   // Each segment needs encoding but slashes must be preserved
   const encodedPath = filePath
@@ -328,7 +342,7 @@ export function getFileDownloadUrl(filePath: string): string {
     .map((s) => encodeURIComponent(s))
     .join('/')
   return buildApiUrl(
-    `/workspaces/${encodeURIComponent(workspaceId)}/files/download/${encodedPath}`,
+    `/workspaces/${encodeURIComponent(claimName)}/files/download/${encodedPath}?${buildWorkspaceQueryParams()}`,
   )
 }
 
@@ -352,9 +366,9 @@ export async function sendMessage(
   content: string,
   callbacks: SendMessageCallbacks = {},
 ) {
-  const workspaceId = getWorkspaceId()
+  const claimName = getClaimName()
   const url = buildApiUrl(
-    `/workspaces/${encodeURIComponent(workspaceId)}/chats/${encodeURIComponent(chatId)}/messages`,
+    `/workspaces/${encodeURIComponent(claimName)}/chats/${encodeURIComponent(chatId)}/messages?${buildWorkspaceQueryParams()}`,
   )
 
   const response = await fetch(url, {

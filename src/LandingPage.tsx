@@ -3,6 +3,8 @@ import { Sparkles, Presentation, Code, Zap } from 'lucide-react'
 import {
   signInWithGoogle,
   exchangeGoogleToken,
+  createWorkspace,
+  waitForWorkspaceReady,
   setStoredAuth,
   type StoredAuth,
 } from './auth'
@@ -14,6 +16,7 @@ type LandingPageProps = {
 export default function LandingPage({ onSignIn }: LandingPageProps) {
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const [isExchanging, setIsExchanging] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -23,13 +26,41 @@ export default function LandingPage({ onSignIn }: LandingPageProps) {
       .then(async (idToken) => {
         setIsExchanging(true)
         setError(null)
+        setStatusMessage('Signing in\u2026')
+
         try {
-          const result = await exchangeGoogleToken(idToken)
-          setStoredAuth(result.token, result.workspace_id)
-          onSignIn({ token: result.token, workspaceId: result.workspace_id })
+          const account = await exchangeGoogleToken(idToken)
+
+          let claimName: string
+          let namespace: string
+
+          if (account.workspace) {
+            // Returning user — reuse existing workspace
+            claimName = account.workspace.claim_name
+            namespace = account.workspace.namespace ?? ''
+          } else {
+            // New user — create a workspace
+            setStatusMessage('Creating workspace\u2026')
+            const ws = await createWorkspace(account.token)
+            claimName = ws.claim_name
+            namespace = ws.namespace
+          }
+
+          // Wait for the sandbox pod to become ready
+          setStatusMessage('Starting workspace\u2026')
+          const podName = await waitForWorkspaceReady(claimName, namespace)
+
+          setStoredAuth(account.token, claimName, namespace, podName)
+          onSignIn({
+            token: account.token,
+            claimName,
+            namespace,
+            podName,
+          })
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Sign-in failed')
           setIsExchanging(false)
+          setStatusMessage('')
         }
       })
       .catch((err) => {
@@ -76,7 +107,7 @@ export default function LandingPage({ onSignIn }: LandingPageProps) {
         <div className="flex flex-col items-center gap-3">
           {isExchanging ? (
             <p className="text-sm text-[var(--text-secondary)]">
-              Setting up your workspace&hellip;
+              {statusMessage}
             </p>
           ) : (
             <div ref={googleBtnRef} />
